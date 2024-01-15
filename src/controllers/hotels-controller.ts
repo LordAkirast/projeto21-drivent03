@@ -51,6 +51,11 @@ export async function getHotels(req: AuthenticatedRequest, res: Response): Promi
             },
         });
 
+        if (!hotels) {
+            res.status(httpStatus.NOT_FOUND).json({ error: 'No hotel found!' });
+            return;
+        }
+
         const formattedHotels = hotels.map((hotel) => ({
             id: hotel.id,
             name: hotel.name,
