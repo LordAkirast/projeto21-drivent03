@@ -8,6 +8,9 @@ import { loadEnv, connectDb, disconnectDB } from '@/config';
 
 loadEnv();
 
+
+
+
 const app = express();
 app
   .use(cors())
@@ -19,6 +22,7 @@ app
   .use('/enrollments', enrollmentsRouter)
   .use('/tickets', ticketsRouter)
   .use('/payments', paymentsRouter)
+  .use('/hotels', paymentsRouter)
   .use(handleApplicationErrors);
 
 export function init(): Promise<Express> {
