@@ -6,6 +6,7 @@ import { InputTicketBody } from '@/protocols';
 import { Prisma } from '@prisma/client';
 import { PrismaClient, Room } from '@prisma/client';
 
+
 const prisma = new PrismaClient();
 
 
@@ -29,26 +30,40 @@ export async function getHotels(req: AuthenticatedRequest, res: Response): Promi
             return;
         }
 
-        if (!enrollment) {
-            res.status(httpStatus.NOT_FOUND).json({ error: 'User has no valid enrollment with paid ticket including hotel' });
-            return;
-        }
-
-        const hotels: Room[] = await prisma.room.findMany({
+        const hotels = await prisma.hotel.findMany({
             select: {
                 id: true,
                 name: true,
                 image: true,
                 createdAt: true,
                 updatedAt: true,
+                Rooms: {
+                    select: {
+                        id: true,
+                        name: true,
+                        capacity: true,
+                        hotelId: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    },
+                },
             },
         });
 
-        const formattedHotels = hotels.map((hotel: Room) => ({
+        const formattedHotels = hotels.map((hotel: { id: any; name: any; image: any; createdAt: { toISOString: () => any; }; updatedAt: { toISOString: () => any; }; Rooms: any[]; }) => ({
             id: hotel.id,
             name: hotel.name,
+            image: hotel.image,
             createdAt: hotel.createdAt.toISOString(),
             updatedAt: hotel.updatedAt.toISOString(),
+            Rooms: hotel.Rooms.map((room) => ({
+                id: room.id,
+                name: room.name,
+                capacity: room.capacity,
+                hotelId: room.hotelId,
+                createdAt: room.createdAt.toISOString(),
+                updatedAt: room.updatedAt.toISOString(),
+            })),
         }));
 
         res.status(httpStatus.OK).json(formattedHotels);
@@ -80,7 +95,7 @@ export async function getHotelById(req: AuthenticatedRequest, res: Response) {
         });
 
         if (!hotelWithRooms) {
-            return res.status(httpStatus.NOT_FOUND).send('Hotel not found');
+            return res.status(404).send('Hotel not found');
         }
 
         const formattedHotel = {
@@ -99,11 +114,9 @@ export async function getHotelById(req: AuthenticatedRequest, res: Response) {
             })),
         };
 
-        return res.status(httpStatus.OK).send(formattedHotel);
+        return res.status(200).json(formattedHotel);
     } catch (error) {
         console.error('Error getting hotel by ID:', error);
-        return res.status(httpStatus.INTERNAL_SERVER_ERROR).send('Internal Server Error');
-    } finally {
-        await prisma.$disconnect();
+        return res.status(500).send('Internal Server Error');
     }
 }
