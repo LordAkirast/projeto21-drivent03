@@ -27,7 +27,7 @@ export async function getHotels(req: AuthenticatedRequest, res: Response): Promi
         });
 
         if (!enrollment) {
-            res.status(httpStatus.NOT_FOUND).json({ error: 'User has no valid enrollment with paid hotel ticket' });
+            res.status(httpStatus.PAYMENT_REQUIRED).json({ error: 'User has no valid enrollment with paid hotel ticket' });
             return;
         }
 
