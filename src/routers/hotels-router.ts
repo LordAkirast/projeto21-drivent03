@@ -3,14 +3,12 @@ import { authenticateToken, validateBody } from "@/middlewares";
 import { createTicketSchema } from "@/schemas";
 import { Router } from "express";
 import { getHotels } from "@/controllers/hotels-controller";
-import { getHotelsById } from "@/controllers/hotels-controller";
+import { getHotelById } from "@/controllers/hotels-controller";
 
 const hotelsRouter = Router();
 
 hotelsRouter
     .all('/*', authenticateToken)
     .get('/', getHotels) ///get Hotels
-    .get('/', getHotelsById) ///get /hotels/:hotelId 
-    .post('/', validateBody(createTicketSchema), createTicket);
-
+    .get('/', getHotelById) ///get /hotels/:hotelId 
 export { hotelsRouter }

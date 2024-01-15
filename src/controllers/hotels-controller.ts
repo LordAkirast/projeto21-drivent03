@@ -59,8 +59,51 @@ export async function getHotels(req: AuthenticatedRequest, res: Response): Promi
 }
 
 
-export async function getHotelsById(req: AuthenticatedRequest, res: Response) {
-    const { userId } = req
-    const ticket = await ticketsService.getTicketByUserId(userId)
-    return res.status(httpStatus.OK).send(ticket)
+export async function getHotelById(req: AuthenticatedRequest, res: Response) {
+    const { hotelId } = req.params;
+
+    try {
+        const hotelWithRooms = await prisma.hotel.findUnique({
+            where: { id: parseInt(hotelId) },
+            include: {
+                Rooms: {
+                    select: {
+                        id: true,
+                        name: true,
+                        capacity: true,
+                        hotelId: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    },
+                },
+            },
+        });
+
+        if (!hotelWithRooms) {
+            return res.status(httpStatus.NOT_FOUND).send('Hotel not found');
+        }
+
+        const formattedHotel = {
+            id: hotelWithRooms.id,
+            name: hotelWithRooms.name,
+            image: hotelWithRooms.image,
+            createdAt: hotelWithRooms.createdAt.toISOString(),
+            updatedAt: hotelWithRooms.updatedAt.toISOString(),
+            Rooms: hotelWithRooms.Rooms.map((room: { id: any; name: any; capacity: any; hotelId: any; createdAt: { toISOString: () => any; }; updatedAt: { toISOString: () => any; }; }) => ({
+                id: room.id,
+                name: room.name,
+                capacity: room.capacity,
+                hotelId: room.hotelId,
+                createdAt: room.createdAt.toISOString(),
+                updatedAt: room.updatedAt.toISOString(),
+            })),
+        };
+
+        return res.status(httpStatus.OK).send(formattedHotel);
+    } catch (error) {
+        console.error('Error getting hotel by ID:', error);
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).send('Internal Server Error');
+    } finally {
+        await prisma.$disconnect();
+    }
 }
