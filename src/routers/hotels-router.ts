@@ -8,7 +8,7 @@ import { getHotelById } from "@/controllers/hotels-controller";
 const hotelsRouter = Router();
 
 hotelsRouter
-    .all('/*', authenticateToken)
+    //.all('/*', authenticateToken)
     .get('/', getHotels) ///get Hotels
     .get('/', getHotelById) ///get /hotels/:hotelId 
 export { hotelsRouter }

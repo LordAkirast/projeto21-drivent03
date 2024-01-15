@@ -14,16 +14,17 @@ export async function getHotels(req: AuthenticatedRequest, res: Response): Promi
     try {
         const userId = req.userId;
 
-        const enrollment = await prisma.$queryRaw`SELECT * FROM Enrollment e
-    WHERE e."userId" = ${userId}
-      AND EXISTS (
-        SELECT 1
-        FROM Ticket t
-        JOIN TicketType tt ON t."ticketTypeId" = tt."id"
-        WHERE t."enrollmentId" = e."id"
-          AND t."status" = 'PAID'
-          AND tt."includesHotel" = true
-      )`;
+        const enrollment = await prisma.enrollment.findFirst({
+            where: {
+                userId,
+                Ticket: {
+                    status: 'PAID',
+                    TicketType: {
+                        includesHotel: true,
+                    },
+                },
+            },
+        });
 
         if (!enrollment) {
             res.status(httpStatus.NOT_FOUND).json({ error: 'User has no valid enrollment with paid hotel ticket' });
@@ -50,7 +51,7 @@ export async function getHotels(req: AuthenticatedRequest, res: Response): Promi
             },
         });
 
-        const formattedHotels = hotels.map((hotel: { id: any; name: any; image: any; createdAt: { toISOString: () => any; }; updatedAt: { toISOString: () => any; }; Rooms: any[]; }) => ({
+        const formattedHotels = hotels.map((hotel) => ({
             id: hotel.id,
             name: hotel.name,
             image: hotel.image,
@@ -70,6 +71,8 @@ export async function getHotels(req: AuthenticatedRequest, res: Response): Promi
     } catch (error) {
         console.error('Erro:', error);
         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Internal Server Error' });
+    } finally {
+        await prisma.$disconnect();
     }
 }
 
