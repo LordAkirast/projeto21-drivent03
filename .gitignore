@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-dist
-node_modules
-.env*
-!.env.example
-yarn.lock
-.vscode
-=======
 # Logs
 logs
 *.log
@@ -136,4 +128,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
->>>>>>> c146e8723b0f83c510899962b1b8e04854a8b6aa
